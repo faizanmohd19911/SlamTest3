@@ -42,18 +42,18 @@ if CONFIG_FILE_URL is not None:
             f.write(res.content)
             f.close()
     else:
-        logging.error(res.status_code)
+        logging.error(f"Failed to download config.env {res.status_code}")
 
 load_dotenv('config.env')
 
 SERVER_PORT = os.environ.get('SERVER_PORT', None)
 PORT = os.environ.get('PORT', SERVER_PORT)
 web = subprocess.Popen([f"gunicorn wserver:start_server --bind 0.0.0.0:{PORT} --worker-class aiohttp.GunicornWebWorker"], shell=True)
-time.sleep(1)
 alive = subprocess.Popen(["python3", "alive.py"])
 subprocess.run(["mkdir", "-p", "qBittorrent/config"])
 subprocess.run(["cp", "qBittorrent.conf", "qBittorrent/config/qBittorrent.conf"])
-subprocess.run(["qbittorrent-nox", "-d", "--profile=."])
+nox = subprocess.Popen(["qbittorrent-nox", "--profile=."])
+time.sleep(1)
 Interval = []
 DRIVES_NAMES = []
 DRIVES_IDS = []
@@ -89,17 +89,18 @@ aria2 = aria2p.API(
     )
 )
 
-
 def get_client() -> qba.TorrentsAPIMixIn:
-    qb_client = qba.Client(host="localhost", port=8090, username="admin", password="adminadmin")
-    try:
-        qb_client.auth_log_in()
-        #qb_client.application.set_preferences({"disk_cache":64, "incomplete_files_ext":True, "max_connec":3000, "max_connec_per_torrent":300, "async_io_threads":8, "preallocate_all":True, "upnp":True, "dl_limit":-1, "up_limit":-1, "dht":True, "pex":True, "lsd":True, "encryption":0, "queueing_enabled":True, "max_active_downloads":15, "max_active_torrents":50, "dont_count_slow_torrents":True, "bittorrent_protocol":0, "recheck_completed_torrents":True, "enable_multi_connections_from_same_ip":True, "slow_torrent_dl_rate_threshold":100,"slow_torrent_inactive_timer":600})
-        return qb_client
-    except qba.LoginFailed as e:
-        logging.error(str(e))
-        return None
+    qb_client = qba.Client(host="localhost", port=8090)
+    return qb_client
 
+"""
+trackers = subprocess.check_output(["curl -Ns https://raw.githubusercontent.com/XIU2/TrackersListCollection/master/all.txt https://ngosang.github.io/trackerslist/trackers_all_http.txt https://newtrackon.com/api/all | awk '$0'"], shell=True).decode('utf-8')
+
+trackerslist = set(trackers.split("\n"))
+trackerslist.remove("")
+trackerslist = "\n\n".join(trackerslist)
+get_client().application.set_preferences({"add_trackers":f"{trackerslist}"})
+"""
 
 DOWNLOAD_DIR = None
 BOT_TOKEN = None
@@ -183,7 +184,7 @@ if DB_URI is not None:
         conn.close()
 
 LOGGER.info("Generating USER_SESSION_STRING")
-app = Client('Slam', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN)
+app = Client('pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, workers=343)
 
 # Generate Telegraph Token
 sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
@@ -194,12 +195,12 @@ telegraph_token = telegraph.get_access_token()
 
 try:
     TG_SPLIT_SIZE = getConfig('TG_SPLIT_SIZE')
-    if len(TG_SPLIT_SIZE) == 0 or int(TG_SPLIT_SIZE) > 2097152000:
+    if len(TG_SPLIT_SIZE) == 0 or int(TG_SPLIT_SIZE) > 2097151000:
         raise KeyError
     else:
         TG_SPLIT_SIZE = int(TG_SPLIT_SIZE)
 except KeyError:
-    TG_SPLIT_SIZE = 2097152000
+    TG_SPLIT_SIZE = 2097151000
 try:
     STATUS_LIMIT = getConfig('STATUS_LIMIT')
     if len(STATUS_LIMIT) == 0:
@@ -210,6 +211,8 @@ except KeyError:
     STATUS_LIMIT = None
 try:
     MEGA_API_KEY = getConfig('MEGA_API_KEY')
+    if len(MEGA_API_KEY) == 0:
+        raise KeyError
 except KeyError:
     logging.warning('MEGA API KEY not provided!')
     MEGA_API_KEY = None
@@ -224,6 +227,8 @@ except KeyError:
     MEGA_PASSWORD = None
 try:
     UPTOBOX_TOKEN = getConfig('UPTOBOX_TOKEN')
+    if len(UPTOBOX_TOKEN) == 0:
+        raise KeyError
 except KeyError:
     logging.warning('UPTOBOX_TOKEN not provided!')
     UPTOBOX_TOKEN = None
@@ -238,29 +243,43 @@ except KeyError:
     INDEX_URL = None
     INDEX_URLS.append(None)
 try:
+    DEFAULT_SEARCH = getConfig('DEFAULT_SEARCH')
+    if len(DEFAULT_SEARCH) == 0:
+        DEFAULT_SEARCH = None
+except KeyError:
+    DEFAULT_SEARCH = None
+try:
     TORRENT_DIRECT_LIMIT = getConfig('TORRENT_DIRECT_LIMIT')
     if len(TORRENT_DIRECT_LIMIT) == 0:
-        TORRENT_DIRECT_LIMIT = None
+        raise KeyError
+    else:
+        TORRENT_DIRECT_LIMIT = float(TORRENT_DIRECT_LIMIT)
 except KeyError:
     TORRENT_DIRECT_LIMIT = None
 try:
     CLONE_LIMIT = getConfig('CLONE_LIMIT')
     if len(CLONE_LIMIT) == 0:
-        CLONE_LIMIT = None
+        raise KeyError
+    else:
+        CLONE_LIMIT = float(CLONE_LIMIT)
 except KeyError:
     CLONE_LIMIT = None
 try:
     MEGA_LIMIT = getConfig('MEGA_LIMIT')
     if len(MEGA_LIMIT) == 0:
-        MEGA_LIMIT = None
+        raise KeyError
+    else:
+        MEGA_LIMIT = float(MEGA_LIMIT)
 except KeyError:
     MEGA_LIMIT = None
 try:
-    TAR_UNZIP_LIMIT = getConfig('TAR_UNZIP_LIMIT')
-    if len(TAR_UNZIP_LIMIT) == 0:
-        TAR_UNZIP_LIMIT = None
+    ZIP_UNZIP_LIMIT = getConfig('ZIP_UNZIP_LIMIT')
+    if len(ZIP_UNZIP_LIMIT) == 0:
+        raise KeyError
+    else:
+        ZIP_UNZIP_LIMIT = float(ZIP_UNZIP_LIMIT)
 except KeyError:
-    TAR_UNZIP_LIMIT = None
+    ZIP_UNZIP_LIMIT = None
 try:
     BUTTON_FOUR_NAME = getConfig('BUTTON_FOUR_NAME')
     BUTTON_FOUR_URL = getConfig('BUTTON_FOUR_URL')
@@ -346,6 +365,17 @@ try:
 except KeyError:
     AS_DOCUMENT = False
 try:
+    EQUAL_SPLITS = getConfig('EQUAL_SPLITS')
+    EQUAL_SPLITS = EQUAL_SPLITS.lower() == 'true'
+except KeyError:
+    EQUAL_SPLITS = False
+try:
+    CUSTOM_FILENAME = getConfig('CUSTOM_FILENAME')
+    if len(CUSTOM_FILENAME) == 0:
+        raise KeyError
+except KeyError:
+    CUSTOM_FILENAME = None
+try:
     RECURSIVE_SEARCH = getConfig('RECURSIVE_SEARCH')
     RECURSIVE_SEARCH = RECURSIVE_SEARCH.lower() == 'true'
 except KeyError:
@@ -361,7 +391,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download token.pickle {res.status_code}")
             raise KeyError
 except KeyError:
     pass
@@ -376,7 +406,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download accounts.zip {res.status_code}")
             raise KeyError
         subprocess.run(["unzip", "-q", "-o", "accounts.zip"])
         os.remove("accounts.zip")
@@ -393,7 +423,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download drive_folder {res.status_code}")
             raise KeyError
 except KeyError:
     pass
@@ -414,7 +444,13 @@ if os.path.exists('drive_folder'):
                 INDEX_URLS.append(temp[2])
             except IndexError as e:
                 INDEX_URLS.append(None)
+                
+try:
+    GDTOT_COOKIES = getConfig('GDTOT_COOKIES')
+except KeyError:
+    logging.warning('GDTOT_COOKIES not provided!')
+    GDTOT_COOKIES = ""
 
-updater = tg.Updater(token=BOT_TOKEN)
+updater = tg.Updater(token=BOT_TOKEN, request_kwargs={'read_timeout': 30, 'connect_timeout': 15})
 bot = updater.bot
 dispatcher = updater.dispatcher

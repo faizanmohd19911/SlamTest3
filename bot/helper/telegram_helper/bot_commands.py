@@ -46,5 +46,7 @@ class _BotCommands:
         self.LeechWatchCommand = 'leechwatch'
         self.LeechTarWatchCommand = 'leechtarwatch'
         self.LeechZipWatchCommand = 'leechzipwatch'
+        self.GDTOTCommand = 'gdtot_cloner'
+        self.ListCommand = 'list_drive'
 
 BotCommands = _BotCommands()

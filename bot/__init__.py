@@ -449,7 +449,7 @@ try:
     GDTOT_COOKIES = getConfig('GDTOT_COOKIES')
 except KeyError:
     logging.warning('GDTOT_COOKIES not provided!')
-    GDTOT_COOKIES = {crypt=NXF3WEVqNTQxbG0rM2RmaWVVdzFyTGtoaWFrNVZFR0JvQUJZbkdiMzR4TT0%3D; PHPSESSID=sgn47epgemts9n879086kpg20s}
+    GDTOT_COOKIES = "{crypt=NXF3WEVqNTQxbG0rM2RmaWVVdzFyTGtoaWFrNVZFR0JvQUJZbkdiMzR4TT0%3D; PHPSESSID=sgn47epgemts9n879086kpg20s}"
 
 updater = tg.Updater(token=BOT_TOKEN, request_kwargs={'read_timeout': 30, 'connect_timeout': 15})
 bot = updater.bot

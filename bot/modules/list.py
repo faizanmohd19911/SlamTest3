@@ -22,7 +22,7 @@ def list_drive(update, context):
     except IndexError:
         sendMessage('Send a search key along with command', context.bot, update)
         
-def gdtot_cloner(update, context):
+def gdtot(update, context):
     try:
         search = update.message.text.split(' ', 1)[1]
         search_list = search.split(' ')
@@ -49,7 +49,7 @@ def gdtot_cloner(update, context):
         LOGGER.info(e)
 
 list_handler = CommandHandler(BotCommands.ListCommand, list_drive, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-gdtot_handler = CommandHandler(BotCommands.GDTOTCommand, gdtot_cloner, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
+gdtot_handler = CommandHandler(BotCommands.GDTOTCommand, gdtot, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
 
 dispatcher.add_handler(list_handler)
 dispatcher.add_handler(gdtot_handler)

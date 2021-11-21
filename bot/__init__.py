@@ -273,13 +273,13 @@ try:
 except KeyError:
     MEGA_LIMIT = None
 try:
-    ZIP_UNZIP_LIMIT = getConfig('ZIP_UNZIP_LIMIT')
-    if len(ZIP_UNZIP_LIMIT) == 0:
+    TAR_UNZIP_LIMIT = getConfig('TAR_UNZIP_LIMIT')
+    if len(TAR_UNZIP_LIMIT) == 0:
         raise KeyError
     else:
-        ZIP_UNZIP_LIMIT = float(ZIP_UNZIP_LIMIT)
+        TAR_UNZIP_LIMIT = float(TAR_UNZIP_LIMIT)
 except KeyError:
-    ZIP_UNZIP_LIMIT = None
+    TAR_UNZIP_LIMIT = None
 try:
     BUTTON_FOUR_NAME = getConfig('BUTTON_FOUR_NAME')
     BUTTON_FOUR_URL = getConfig('BUTTON_FOUR_URL')
